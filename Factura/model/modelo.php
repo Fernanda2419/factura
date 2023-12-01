@@ -18,6 +18,24 @@ class FormaPago {
     public $tipo_pago;
 }
 
+class Cliente {
+    public $id_cliente;
+    public $ruc_cliente;
+    public $nombre_cliente;
+    public $apellido_cliente;
+}
+
+class Factura {
+    public $id_factura;
+    public $num_factura;
+    public $auto_sri;
+    public $fecha_emision;
+    public $guia_emision;
+    public $iva;
+    public $descuento;
+    
+    // Puedes agregar más métodos o lógica según tus necesidades
+}
 
 class BaseDatos {
 
@@ -84,7 +102,101 @@ class BaseDatos {
         }
 
         return $empresas;
-    }   
+    } 
+    
+    //insertar cliente
+    public function insertarCliente($ruc_cliente, $nombre_cliente, $apellido_cliente) {
+        $stmt = $this->conexion->prepare("INSERT INTO cliente (ruc, nombre, apellido) VALUES (?, ?, ?)");
+        $stmt->bind_param("sdi", $ruc_cliente, $nombre_cliente, $apellido_cliente);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+     /* eliminar cliente*/
+     public function eliminarCliente($id_cliente) {
+        $stmt = $this->conexion->prepare("DELETE FROM cliente WHERE id = ?");
+        $stmt->bind_param("i", $id_cliente);
+        $stmt->execute();
+        $stmt->close();
+    }
+    /* actualizar cliente*/
+    public function actualizarCliente($id_cliente, $nuevo_ruc, $nuevo_nombre) {
+        $stmt = $this->conexion->prepare("UPDATE cliente SET ruc = ?, nombre = ? WHERE id = ?");
+        $stmt->bind_param("ssi", $nuevo_ruc, $nuevo_nombre, $id_cliente);
+        $stmt->execute();
+        $stmt->close();
+    }
+    /* obtener todos los clientes*/
+
+    public function obtenerClientes() {
+        $result = $this->conexion->query("SELECT * FROM cliente");
+    
+        while ($row = $result->fetch_object("Clientes")) {
+            $cliente[] = $row;
+        }
+
+        return $cliente;
+    }
+   
+    /* obtener cliente*/
+    public function obtenerClientePorID($id_cliente) {
+        $stmt = $this->conexion->prepare("SELECT * FROM cliente WHERE id = ?");
+        $stmt->bind_param("i", $id_cliente);
+        $stmt->execute();
+    
+        $result = $stmt->get_result();
+    
+        if ($result->num_rows > 0) {
+            return $result->fetch_assoc();
+        } else {
+            return false;
+        }
+    }  
+    
+    public function insertarFactura(Factura $factura) {
+        $stmt = $this->conexion->prepare("INSERT INTO factura (num_factura, auto_sri, fecha_emision, guia_emision, iva, descuento) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("dssssd", $factura->num_factura, $factura->auto_sri, $factura->fecha_emision, $factura->guia_emision, $factura->iva, $factura->descuento);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    public function eliminarFactura($id_factura) {
+        $stmt = $this->conexion->prepare("DELETE FROM factura WHERE id_factura = ?");
+        $stmt->bind_param("i", $id_factura);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    public function actualizarFactura(Factura $factura) {
+        $stmt = $this->conexion->prepare("UPDATE factura SET num_factura = ?, auto_sri = ?, fecha_emision = ?, guia_emision = ?, iva = ?, descuento = ? WHERE id_factura = ?");
+        $stmt->bind_param("dssssdi", $factura->num_factura, $factura->auto_sri, $factura->fecha_emision, $factura->guia_emision, $factura->iva, $factura->descuento, $factura->id_factura);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    public function obtenerFacturas() {
+        $result = $this->conexion->query("SELECT * FROM factura");
+    
+        if ($result) {
+            return $result->fetch_all(MYSQLI_ASSOC);
+        } else {
+            return false;
+        }
+    }
+
+    public function obtenerFacturaPorID($id_factura) {
+        $stmt = $this->conexion->prepare("SELECT * FROM factura WHERE id_factura = ?");
+        $stmt->bind_param("i", $id_factura);
+        $stmt->execute();
+    
+        $result = $stmt->get_result();
+    
+        if ($result->num_rows > 0) {
+            return $result->fetch_assoc();
+        } else {
+            return false;
+        }
+    }
     
 }
 
@@ -131,4 +243,63 @@ foreach ($empresas as $empresa) {
     echo "<br>";
 }
 
+//insertar cliente
+$baseDatos->insertarCliente("0605753375001", "Erika", "Perez");
+$baseDatos->insertarCliente("0605753376001", "Karina", "Perez");
+$baseDatos->insertarCliente("0605753374001", "Marlene", "Perez");
+
+// Obtener todos los productos
+$productos = $baseDatos->obtenerTodosLosProductos();
+
+// Imprimir todos los productos
+echo "<br>Datos de todos los productos:<br>";
+foreach ($productos as $producto) {
+    echo "ID: " . $producto->id . "<br>";
+    echo "Nombre: " . $producto->nombre . "<br>";
+    echo "Precio: $" . $producto->cantidad . "<br>";
+    echo "Stock: " . $producto->precio . "<br>";
+    echo "<br>";
+}
+
+// Insertar una nueva factura
+$factura = new Factura();
+$factura->num_factura = 12345;
+$factura->auto_sri = 'ABC123';
+$factura->fecha_emision = '2023-01-01';
+$factura->guia_emision = 'XYZ789';
+$factura->iva = 10.5;
+$factura->descuento = 5.0;
+
+$baseDatos->insertarFactura($factura);
+
+// Eliminar una factura
+$baseDatos->eliminarFactura(1);
+
+// Obtener una factura por su ID
+$facturaObtenida = $baseDatos->obtenerFacturaPorID(2);
+
+// Imprimir los datos de la factura obtenida por ID
+echo "Datos de la factura por ID:<br>";
+echo "ID: " . $facturaObtenida['id_factura'] . "<br>";
+echo "Número de Factura: " . $facturaObtenida['num_factura'] . "<br>";
+echo "Auto SRI: " . $facturaObtenida['auto_sri'] . "<br>";
+echo "Fecha de Emisión: " . $facturaObtenida['fecha_emision'] . "<br>";
+echo "Guía de Emisión: " . $facturaObtenida['guia_emision'] . "<br>";
+echo "IVA: $" . $facturaObtenida['iva'] . "<br>";
+echo "Descuento: $" . $facturaObtenida['descuento'] . "<br>";
+
+// Obtener todas las facturas
+$facturas = $baseDatos->obtenerFacturas();
+
+// Imprimir todas las facturas
+echo "<br>Datos de todas las facturas:<br>";
+foreach ($facturas as $factura) {
+    echo "ID: " . $factura['id_factura'] . "<br>";
+    echo "Número de Factura: " . $factura['num_factura'] . "<br>";
+    echo "Auto SRI: " . $factura['auto_sri'] . "<br>";
+    echo "Fecha de Emisión: " . $factura['fecha_emision'] . "<br>";
+    echo "Guía de Emisión: " . $factura['guia_emision'] . "<br>";
+    echo "IVA: $" . $factura['iva'] . "<br>";
+    echo "Descuento: $" . $factura['descuento'] . "<br>";
+}
 ?>
