@@ -39,6 +39,21 @@ class BaseDatos {
         return $productos;
     }
 
+    public function eliminarProducto($id) {
+        $stmt = $this->conexion->prepare("DELETE FROM producto WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    // Método para editar un producto por ID
+    public function editarProducto($id, $nombre, $cantidad, $precio) {
+        $stmt = $this->conexion->prepare("UPDATE producto SET nombre = ?, cantidad = ?, precio = ? WHERE id = ?");
+        $stmt->bind_param("sdi", $nombre, $cantidad, $precio, $id);
+        $stmt->execute();
+        $stmt->close();
+    }
+
     
 }
 
@@ -53,6 +68,12 @@ $baseDatos->insertarProducto("camiseta", 10, 5);
 // Obtener todos los productos
 $productos = $baseDatos->obtenerTodosLosProductos();
 
+// Ejemplo de eliminar un producto por ID (cambia el ID según tus necesidades)
+$baseDatos->eliminarProducto(2);
+
+// Ejemplo de editar un producto por ID (cambia los valores según tus necesidades)
+$baseDatos->editarProducto(2, "nuevo_nombre", 15, 8);
+
 // Imprimir todos los productos
 echo "<br>Datos de todos los productos:<br>";
 foreach ($productos as $producto) {
@@ -63,6 +84,4 @@ foreach ($productos as $producto) {
     echo "<br>";
 }
 
-
-/* ---------------------------------------- */
 ?>
