@@ -50,7 +50,7 @@ $baseDatos = new BaseDatos("localhost", "root", '', "generacion_factura");
 /* ---------------------------------------- */
 
 // Insertar una nueva empresa
-$baseDatos->insertarEmpresa("La Favorita", 1415765476655, Canonigo);
+$baseDatos->insertarEmpresa("La Favorita", "1415765476655", "Canonigo");
 
 // Obtener todas las empresas
 $empresas = $baseDatos->obtenerDatosEmpresas();
@@ -58,12 +58,10 @@ $empresas = $baseDatos->obtenerDatosEmpresas();
 // Imprimir todos los empresa
 echo "<br>Datos de todos los empresas:<br>";
 foreach ($empresas as $empresa) {
-    echo "ID: " . $empresa->id . "<br>";
+    echo "ID: " . $empresa->id_empresa . "<br>";
     echo "Nombre Empresa: " . $empresa->nombre_empresa . "<br>";
-    echo "RUC Empresa: $" . $empresa->cruc_empresa . "<br>";
-    echo "Direccion: " . $empresa->precio . "<br>";
+    echo "RUC Empresa: $" . $empresa->ruc_empresa . "<br>";
+    echo "Direccion: " . $empresa->direccion . "<br>";
     echo "<br>";
 }
-
-/* ---------------------------------------- */
 ?>
