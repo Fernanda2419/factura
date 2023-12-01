@@ -1,126 +1,69 @@
 <?php
 
-class ProductoDAO {
-    private $servername = "localhost";
-    private $username = "root";
-    private $password = "";
-    private $dbname = "generacion_factura";
-    private $conn;
+class Empresa {
+    public $id_empresa;
+    public $nombre_empresa;
+    public $ruc_empresa;
+    public $direccion;
+}
+
+class FormaPago {
+    public $id_pago;
+    public $tipo_pago;
+}
+
+class BaseDatos {
 
     // Constructor: Establecer conexión a la base de datos
-    public function __construct() {
-        $this->conn = new mysqli($this->servername, $this->username, $this->password, $this->dbname);
+    public function __construct($host, $usuario, $contrasena, $baseDatos) {
+        $this->conexion = new mysqli($host, $usuario, $contrasena, $baseDatos);
 
-        if ($this->conn->connect_error) {
-            die("Conexión fallida: " . $this->conn->connect_error);
+        if ($this->conexion->connect_error) {
+            die("Error de conexión: " . $this->conexion->connect_error);
         }
     }
 
-    // Cerrar conexión a la base de datos
-    public function __destruct() {
-        $this->conn->close();
+    // Método para crear una nueva empresa
+    public function insertarEmpresa($id_empresa, $nombre_empresa, $ruc_empresa, $direccion) {
+        $stmt = $this->conexion->prepare("INSERT INTO empresa (nombre, ruc, direccion) VALUES (?, ?, ?)");
+        $stmt->bind_param("sdi", $nombre_empresa, $ruc_empresa, $direccion);
+        $stmt->execute();
+        $stmt->close();
     }
 
-    // Método para crear un nuevo producto
-    public function crearProducto($descripcion, $cantidad, $precio) {
-        $sql = "INSERT INTO productos (descripcion, cantidad, precio) VALUES ('$descripcion', $cantidad, $precio)";
+    // Método para crear una nueva empresa
+    public function obtenerDatosEmpresas() {
+        $empresas = array();
 
-        if ($this->conn->query($sql) === TRUE) {
-            return true;
-        } else {
-            return false;
+        $result = $this->conexion->query("SELECT * FROM empresa");
+        while ($row = $result->fetch_object("Empresa")) {
+            $empresas[] = $row;
         }
-    }
 
-    // Método para leer información de un producto por su ID
-    public function obtenerProducto($id) {
-        $sql = "SELECT * FROM productos WHERE id = $id";
-        $result = $this->conn->query($sql);
-
-        if ($result->num_rows > 0) {
-            return $result->fetch_assoc();
-        } else {
-            return null;
-        }
-    }
-
-    // Método para actualizar la información de un producto
-    public function actualizarProducto($id, $nombre, $cantidad, $precio) {
-        $sql = "UPDATE productos SET nombre='$nombre', cantidad=$cantidad, precio=$precio WHERE id = $id";
-
-        if ($this->conn->query($sql) === TRUE) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    // Método para eliminar un producto por su ID
-    public function eliminarProducto($id) {
-        $sql = "DELETE FROM productos WHERE id = $id";
-
-        if ($this->conn->query($sql) === TRUE) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+        return $empresas;
+    }   
 }
 
-class EmpresaDAO {
-    private $pdo;
+// Crear una instancia de la clase BaseDatos
+$baseDatos = new BaseDatos("localhost", "root", '', "generacion_factura");
 
-    public function __construct($pdo) {
-        $this->pdo = $pdo;
-    }
+/* ---------------------------------------- */
 
-    public function crearEmpresa($ruc, $nombreComercial, $razonSocial, $direccion) {
-        $stmt = $this->pdo->prepare("INSERT INTO empresa (ruc, nombre_comercial, razon_social, direccion) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$ruc, $nombreComercial, $razonSocial, $direccion]);
-    }
+// Insertar una nueva empresa
+$baseDatos->insertarEmpresa("La Favorita", 1415765476655, Canonigo);
 
-    public function obtenerEmpresas() {
-        $stmt = $this->pdo->query("SELECT * FROM empresa");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+// Obtener todas las empresas
+$empresas = $baseDatos->obtenerDatosEmpresas();
 
-    public function actualizarEmpresa($id, $ruc, $nombreComercial, $razonSocial, $direccion) {
-        $stmt = $this->pdo->prepare("UPDATE empresa SET ruc = ?, nombre_comercial = ?, razon_social = ?, direccion = ? WHERE id = ?");
-        $stmt->execute([$ruc, $nombreComercial, $razonSocial, $direccion, $id]);
-    }
-
-    public function eliminarEmpresa($id) {
-        $stmt = $this->pdo->prepare("DELETE FROM empresa WHERE id = ?");
-        $stmt->execute([$id]);
-    }
+// Imprimir todos los empresa
+echo "<br>Datos de todos los empresas:<br>";
+foreach ($empresas as $empresa) {
+    echo "ID: " . $empresa->id . "<br>";
+    echo "Nombre Empresa: " . $empresa->nombre_empresa . "<br>";
+    echo "RUC Empresa: $" . $empresa->cruc_empresa . "<br>";
+    echo "Direccion: " . $empresa->precio . "<br>";
+    echo "<br>";
 }
 
-
-class FormaPagoDAO {
-    private $pdo;
-
-    public function __construct($pdo) {
-        $this->pdo = $pdo;
-    }
-
-    public function crearFormaPago($nombre) {
-        $stmt = $this->pdo->prepare("INSERT INTO forma_pago (nombre) VALUES (?)");
-        $stmt->execute([$nombre]);
-    }
-
-    public function obtenerFormasPago() {
-        $stmt = $this->pdo->query("SELECT * FROM forma_pago");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public function actualizarEmpresa($id, $ruc, $nombreComercial, $razonSocial, $direccion) {
-        $stmt = $this->pdo->prepare("UPDATE empresa SET ruc = ?, nombre_comercial = ?, razon_social = ?, direccion = ? WHERE id = ?");
-        $stmt->execute([$ruc, $nombreComercial, $razonSocial, $direccion, $id]);
-    }
-
-    public function eliminarEmpresa($id) {
-        $stmt = $this->pdo->prepare("DELETE FROM empresa WHERE id = ?");
-        $stmt->execute([$id]);
-    }
-}
+/* ---------------------------------------- */
 ?>
